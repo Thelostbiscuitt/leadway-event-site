@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventShare - Social Media Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --border: #dee2e6;
+            --accent: #4361ee;
+            --accent-hover: #3a56d4;
+            --like-color: #e63946;
+            --shadow: rgba(0,0,0,0.1);
+            --success: #2a9d8f;
+            --error: #e76f51;
+            --warning: #f4a261;
+            --card-radius: 16px;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --border: #333;
+            --shadow: rgba(255,255,255,0.05);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.2rem;
+            background: rgba(67, 97, 238, 0.1);
+            padding: 6px 15px;
+            border-radius: 20px;
+        }
+
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+        }
+
+        .hamburger:hover {
+            background: var(--accent);
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--text-primary);
+            margin: 2px 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .hamburger:hover span {
+            background: white;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 2px solid var(--border);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+            box-shadow: 2px 0 10px var(--shadow);
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 15px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .sidebar-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--accent), #e63946);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .post-form {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: var(--card-radius);
+            margin-bottom: 30px;
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .file-input-wrapper:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, var(--accent), #e63946);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .posts-container {
+            margin-bottom: 40px;
+        }
+
+        .post {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--accent), #e63946);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-size: 1.4rem;
+        }
+
+        .post-info h4 {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .post-time {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .post-content {
+            margin-bottom: 15px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .post-media {
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .media-item {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px var(--shadow);
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .media-item img, .media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-primary);
+        }
+
+        .action-btn.liked {
+            color: var(--like-color);
+        }
+
+        .comments-section {
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+
+        .comment {
+            background: var(--bg-primary);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .comment-time {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .comment-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .comment-author-input {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .comment-input {
+            flex: 2;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .comment-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .ai-collage-section {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+            border: 2px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .locked-section {
+            position: relative;
+        }
+
+        .password-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--card-radius);
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        .ai-collage-section h2 {
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--accent), #e63946);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.8rem;
+        }
+
+        .collage-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .collage-btn {
+            background: linear-gradient(45deg, var(--accent), #e63946);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .collage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .collage-canvas {
+            background: var(--bg-primary);
+            border: 2px dashed var(--border);
+            border-radius: 15px;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .collage-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background-color: var(--success);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            transform: translateX(200%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background-color: var(--error);
+        }
+        
+        .notification.info {
+            background-color: var(--accent);
+        }
+
+        .media-counter {
+            display: inline-block;
+            margin-left: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+
+        .file-list {
+            margin-top: 10px;
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .file-name {
+            font-size: 0.85em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80%;
+        }
+
+        .remove-file {
+            background: rgba(231, 57, 70, 0.2);
+            color: var(--like-color);
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .stats-container {
+            background: var(--bg-secondary);
+            border-radius: var(--card-radius);
+            padding: 25px;
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 15px var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-center {
+                position: static;
+                transform: none;
+                order: -1;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .collage-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .sidebar {
+                width: 280px;
+            }
+
+            .hamburger {
+                margin-right: 10px;
+            }
+
+            .comment-form {
+                flex-direction: column;
+            }
+
+            .comment-author-input, .comment-input, .comment-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="hamburger" onclick="toggleSidebar()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="logo">
+                    <i class="fas fa-calendar-alt"></i> EventShare
+                </div>
+            </div>
+            <div class="header-center">
+                LEADWAY PENSURE #CSW2025 #MISSIONPOSSIBLE
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="themeIcon">🌙</span>
+                <span id="themeText">Dark Mode</span>
+            </button>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Menu</div>
+                <button class="close-btn" onclick="toggleSidebar()">×</button>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showPage('posts')" class="active" id="postsLink"><i class="fas fa-newspaper"></i> Posts</a></li>
+                <li><a href="#" onclick="showPage('collage')" id="collageLink"><i class="fas fa-images"></i> AI Collage Generator</a></li>
+                <li><a href="#" onclick="showPage('stats')" id="statsLink"><i class="fas fa-chart-bar"></i> Statistics</a></li>
+            </ul>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Notification -->
+        <div class="notification" id="notification"></div>
+
+        <!-- Posts Page -->
+        <div class="page active" id="postsPage">
+            <div class="post-form">
+                <h2><i class="fas fa-share-alt"></i> Share Your Event</h2>
+                <div class="form-group">
+                    <label for="authorName"><i class="fas fa-user"></i> Your Name</label>
+                    <input type="text" id="authorName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="postContent"><i class="fas fa-comment"></i> What's happening?</label>
+                    <textarea id="postContent" placeholder="Share details about the event, people, or anything interesting..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="file-input-wrapper">
+                        <i class="fas fa-paperclip"></i> Add Media (max 5)
+                        <span class="media-counter" id="fileCounter">0/5</span>
+                        <input type="file" id="mediaInput" multiple accept="image/*,video/*" onchange="handleFiles()">
+                    </label>
+                    <div id="fileList" class="file-list"></div>
+                </div>
+                <button class="submit-btn" onclick="createPost()">
+                    <i class="fas fa-paper-plane"></i> Share Post
+                </button>
+            </div>
+
+            <div class="posts-container" id="postsContainer">
+                <!-- Posts will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Collage Page -->
+        <div class="page" id="collagePage">
+            <div class="ai-collage-section locked-section" id="aiCollageSection">
+                <div class="password-overlay" id="passwordOverlay">
+                    <div class="password-form">
+                        <h3><i class="fas fa-lock"></i> Access Required</h3>
+                        <p>Enter password to access AI Collage Generator</p>
+                        <div>
+                            <input type="password" class="password-input" id="passwordInput" placeholder="Enter password">
+                            <button class="password-btn" onclick="checkPassword()">Unlock</button>
+                        </div>
+                        <div id="passwordError" style="color: #e63946; margin-top: 10px; display: none;">
+                            Incorrect password. Please try again.
+                        </div>
+                    </div>
+                </div>
+                <h2><i class="fas fa-magic"></i> AI Collage Generator</h2>
+                <p>Transform all posted images and videos into a beautiful collage using AI magic!</p>
+                <div class="collage-controls">
+                    <button class="collage-btn" onclick="generateCollage('mosaic')">
+                        <i class="fas fa-th"></i> Create Mosaic
+                    </button>
+                    <button class="collage-btn" onclick="generateCollage('grid')">
+                        <i class="fas fa-border-all"></i> Grid Layout
+                    </button>
+                    <button class="collage-btn" onclick="generateCollage('artistic')">
+                        <i class="fas fa-paint-brush"></i> Artistic Blend
+                    </button>
+                    <button class="collage-btn" onclick="clearCollage()">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <div class="collage-canvas" id="collageCanvas">
+                    <div id="collagePlaceholder">Your AI-generated collage will appear here</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Page -->
+        <div class="page" id="statsPage">
+            <div class="stats-container">
+                <h2><i class="fas fa-chart-bar"></i> EventShare Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-newspaper fa-2x"></i>
+                        <div class="stat-value" id="postCount">0</div>
+                        <div class="stat-label">Total Posts</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-comments fa-2x"></i>
+                        <div class="stat-value" id="commentCount">0</div>
+                        <div class="stat-label">Total Comments</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-image fa-2x"></i>
+                        <div class="stat-value" id="mediaCount">0</div>
+                        <div class="stat-label">Media Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-heart fa-2x"></i>
+                        <div class="stat-value" id="likeCount">0</div>
+                        <div class="stat-label">Total Likes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Persistent data storage using localStorage
+        let posts = JSON.parse(localStorage.getItem('eventSharePosts')) || [];
+        let currentTheme = localStorage.getItem('eventShareTheme') || 'light';
+        let isCollageUnlocked = false;
+        const COLLAGE_PASSWORD = "244466666";
+        let selectedFiles = [];
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved theme
+            setTheme(currentTheme);
+            
+            // Render saved posts
+            renderPosts();
+            
+            // Initialize theme toggle text
+            updateThemeToggleText();
+            
+            // Load stats
+            updateStats();
+        });
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        // Show specific page
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            const selectedPage = document.getElementById(pageId + 'Page');
+            selectedPage.classList.add('active');
+            
+            // Update menu links
+            document.querySelectorAll('.sidebar-menu a').forEach(link => link.classList.remove('active'));
+            document.getElementById(pageId + 'Link').classList.add('active');
+            
+            // Update stats if needed
+            if (pageId === 'stats') {
+                updateStats();
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const postCount = posts.length;
+            const commentCount = posts.reduce((total, post) => total + post.comments.length, 0);
+            const mediaCount = posts.reduce((total, post) => total + post.media.length, 0);
+            const likeCount = posts.reduce((total, post) => total + post.likes, 0);
+            
+            document.getElementById('postCount').textContent = postCount;
+            document.getElementById('commentCount').textContent = commentCount;
+            document.getElementById('mediaCount').textContent = mediaCount;
+            document.getElementById('likeCount').textContent = likeCount;
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(currentTheme);
+            localStorage.setItem('eventShareTheme', currentTheme);
+            updateThemeToggleText();
+        }
+        
+        // Apply theme to the document
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+        
+        // Update theme toggle button text
+        function updateThemeToggleText() {
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            
+            if (currentTheme === 'light') {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark Mode';
+            } else {
+                icon.textContent = '☀️';
+                text.textContent = 'Light Mode';
+            }
+        }
+        
+        // Handle file selection
+        function handleFiles() {
+            const input = document.getElementById('mediaInput');
+            const counter = document.getElementById('fileCounter');
+            const fileList = document.getElementById('fileList');
+            
+            // Clear previous selection
+            selectedFiles = [];
+            fileList.innerHTML = '';
+            
+            // Get files and limit to 5
+            const files = Array.from(input.files).slice(0, 5);
+            selectedFiles = files;
+            
+            // Update counter
+            counter.textContent = `${files.length}/5`;
+            
+            // Display file list
+            if (files.length > 0) {
+                files.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-name">${file.name}</div>
+                        <button class="remove-file" onclick="removeFile(${index})">×</button>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+        }
+        
+        // Remove a file from selection
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            handleFiles(); // Refresh file display
+        }
+        
+        // Create a new post
+        function createPost() {
+            const authorName = document.getElementById('authorName').value.trim();
+            const postContent = document.getElementById('postContent').value.trim();
+            
+            if (!authorName || !postContent) {
+                showNotification('Please enter your name and post content', 'error');
+                return;
+            }
+            
+            const newPost = {
+                id: Date.now(),
+                author: authorName,
+                content: postContent,
+                timestamp: new Date().toISOString(),
+                likes: 0,
+                liked: false,
+                comments: [],
+                media: []
+            };
+            
+            // Handle media files
+            if (selectedFiles.length > 0) {
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    const fileName = `media-${Date.now()}-${file.name}`;
+                    const fileType = file.type.split('/')[0]; // 'image' or 'video'
+                    
+                    newPost.media.push({
+                        name: fileName,
+                        type: fileType,
+                        url: URL.createObjectURL(file)
+                    });
+                }
+            }
+            
+            // Add to posts array
+            posts.unshift(newPost);
+            
+            // Save to localStorage
+            savePosts();
+            
+            // Render posts
+            renderPosts();
+            
+            // Clear form
+            document.getElementById('authorName').value = '';
+            document.getElementById('postContent').value = '';
+            document.getElementById('mediaInput').value = '';
+            document.getElementById('fileList').innerHTML = '';
+            document.getElementById('fileCounter').textContent = '0/5';
+            selectedFiles = [];
+            
+            showNotification('Post created successfully!');
+        }
+        
+        // Render all posts
+        function renderPosts() {
+            const postsContainer = document.getElementById('postsContainer');
+            
+            if (posts.length === 0) {
+                postsContainer.innerHTML = `
+                    <div class="post" style="text-align: center; padding: 40px;">
+                        <h3>No posts yet</h3>
+                        <p>Be the first to share an event!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            postsContainer.innerHTML = '';
+            
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+                postElement.innerHTML = `
+                    <div class="post-header">
+                        <div class="avatar">${post.author.charAt(0)}</div>
+                        <div class="post-info">
+                            <h4>${post.author}</h4>
+                            <div class="post-time">${formatDate(post.timestamp)}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${post.media.length > 0 ? `
+                        <div class="post-media">
+                            ${post.media.map(media => 
+                                media.type === 'image' ? 
+                                    `<div class="media-item"><img src="${media.url}" alt="Post image"></div>` :
+                                    `<div class="media-item"><video controls><source src="${media.url}" type="video/mp4"></video></div>`
+                            ).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="post-actions">
+                        <button class="action-btn ${post.liked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
+                            <i class="fas fa-heart"></i> <span>${post.likes}</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleComments(this)">
+                            <i class="fas fa-comment"></i> ${post.comments.length} Comments
+                        </button>
+                    </div>
+                    <div class="comments-section" style="display: none;">
+                        ${post.comments.length > 0 ? post.comments.map(comment => `
+                            <div class="comment">
+                                <div class="comment-header">
+                                    <span class="comment-author">${comment.author}</span>
+                                    <span class="comment-time">${formatDate(comment.timestamp)}</span>
+                                </div>
+                                <div>${comment.content}</div>
+                            </div>
+                        `).join('') : '<p style="text-align:center;color:var(--text-secondary)">No comments yet</p>'}
+                        <div class="comment-form">
+                            <input type="text" class="comment-author-input" placeholder="Your name">
+                            <input type="text" class="comment-input" placeholder="Add a comment...">
+                            <button class="comment-btn" onclick="addComment(${post.id}, this)">Post</button>
+                        </div>
+                    </div>
+                `;
+                
+                postsContainer.appendChild(postElement);
+            });
+            
+            updateStats();
+        }
+        
+        // Toggle like on a post
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            post.liked = !post.liked;
+            post.likes += post.liked ? 1 : -1;
+            
+            savePosts();
+            renderPosts();
+        }
+        
+        // Toggle comments visibility
+        function toggleComments(button) {
+            const commentsSection = button.closest('.post').querySelector('.comments-section');
+            commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Add comment to a post
+        function addComment(postId, button) {
+            const form = button.closest('.comment-form');
+            const authorInput = form.querySelector('.comment-author-input');
+            const commentInput = form.querySelector('.comment-input');
+            
+            const author = authorInput.value.trim();
+            const commentText = commentInput.value.trim();
+            
+            if (!author || !commentText) {
+                showNotification('Please enter your name and comment', 'error');
+                return;
+            }
+            
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            post.comments.push({
+                author: author,
+                content: commentText,
+                timestamp: new Date().toISOString()
+            });
+            
+            savePosts();
+            renderPosts();
+            
+            // Clear inputs
+            authorInput.value = '';
+            commentInput.value = '';
+        }
+        
+        // Check collage password
+        function checkPassword() {
+            const passwordInput = document.getElementById('passwordInput').value;
+            const passwordError = document.getElementById('passwordError');
+            
+            if (passwordInput === COLLAGE_PASSWORD) {
+                isCollageUnlocked = true;
+                document.getElementById('passwordOverlay').style.display = 'none';
+                showNotification('Collage generator unlocked!');
+            } else {
+                passwordError.style.display = 'block';
+                setTimeout(() => {
+                    passwordError.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Generate collage (simulated)
+        function generateCollage(type) {
+            if (!isCollageUnlocked) {
+                showNotification('Please unlock the collage generator first', 'error');
+                return;
+            }
+            
+            // Get all media from posts
+            const mediaItems = posts.flatMap(post => post.media);
+            
+            if (mediaItems.length === 0) {
+                showNotification('No media available to create collage', 'error');
+                return;
+            }
+            
+            const canvas = document.getElementById('collageCanvas');
+            const placeholder = document.getElementById('collagePlaceholder');
+            
+            // Clear previous collage
+            canvas.innerHTML = '';
+            
+            // Show loading
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            canvas.appendChild(loading);
+            placeholder.style.display = 'none';
+            
+            // Simulate AI processing
+            setTimeout(() => {
+                canvas.innerHTML = '';
+                placeholder.style.display = 'none';
+                
+                const collageImg = document.createElement('div');
+                collageImg.style.width = '100%';
+                collageImg.style.height = '100%';
+                collageImg.style.background = 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)';
+                collageImg.style.borderRadius = '10px';
+                collageImg.style.display = 'flex';
+                collageImg.style.flexDirection = 'column';
+                collageImg.style.alignItems = 'center';
+                collageImg.style.justifyContent = 'center';
+                collageImg.style.color = 'white';
+                collageImg.style.fontSize = '1.5rem';
+                collageImg.style.fontWeight = 'bold';
+                collageImg.style.textAlign = 'center';
+                collageImg.style.padding = '20px';
+                
+                collageImg.innerHTML = `
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: 20px;"><i class="fas fa-check-circle"></i></div>
+                        ${type.charAt(0).toUpperCase() + type.slice(1)} Collage Created!
+                        <div style="font-size: 1rem; margin-top: 20px;">
+                            Generated from ${mediaItems.length} media items
+                        </div>
+                        <div style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">
+                            (Simulated AI-generated collage)
+                        </div>
+                    </div>
+                `;
+                
+                canvas.appendChild(collageImg);
+                
+                showNotification(`${type} collage generated successfully!`);
+            }, 2000);
+        }
+        
+        // Clear collage
+        function clearCollage() {
+            const canvas = document.getElementById('collageCanvas');
+            const placeholder = document.getElementById('collagePlaceholder');
+            canvas.innerHTML = '';
+            placeholder.style.display = 'block';
+        }
+        
+        // Save posts to localStorage
+        function savePosts() {
+            localStorage.setItem('eventSharePosts', JSON.stringify(posts));
+        }
+        
+        // Format date for display
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
